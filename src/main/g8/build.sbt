@@ -1,4 +1,3 @@
-
 name := "$name$"
 
 organization := "$organization$"
@@ -15,11 +14,13 @@ resolvers ++= Seq(
     "Sonatype OSS Snapshots" at "http://oss.sonatype.org/content/repositories/snapshots/"
 )
 
+mainClass in Compile := Some("$organization$.$name$.Main")
+
 enablePlugins(JavaAppPackaging)
+
 libraryDependencies ++= Seq(
     "net.logstash.logback" % "logstash-logback-encoder" % "4.4",
-    "io.verizon.journal" %% "core" % "3.0.18"
-    ,
+    "io.verizon.journal" %% "core" % "3.0.18",
     "org.http4s" %% "http4s-dsl" % http4sVersion,
     "org.http4s" %% "http4s-blaze-server" % http4sVersion,
     "org.http4s" %% "http4s-argonaut" % http4sVersion,
@@ -46,4 +47,4 @@ scalacOptions ++= Seq(
     "-Ywarn-dead-code",
     "-Xfuture")
 
-initialCommands := "import com.c12e.webserver._"
+initialCommands := "import $organization$.$name$._"
