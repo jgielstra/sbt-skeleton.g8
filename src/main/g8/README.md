@@ -1,1 +1,1 @@
-Simple Sbt project with Scala.
+Simple HTTP4S project with Scala.
