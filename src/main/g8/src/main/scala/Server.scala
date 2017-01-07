@@ -6,30 +6,41 @@ import org.http4s.dsl._
 import scala.util.{ Failure, Success, Try }
 import scalaz.concurrent.Task
 
-object WebApp {
-  val dogs = List(
-    Dog("Cerberus", 5, "Mastiff"),
-    Dog("Fluffy", 5, "Poodle")
-  )
+class ServiceRoutes(api: ServiceAPI) {
   val service =
     HttpService {
-      case GET -> Root / "dogs"               ⇒ Ok(dogs)
-      case GET -> Root / "dogs" / offset      ⇒ getDog(offset)
-      case req @ POST -> Root / "dogs"        ⇒ postScala(req)
-      case req @ GET -> Root / "healthcheck" ⇒ Ok(ResponseMsg("OK")) // TODO: simple health check api.. should check things like connectivity: db, redis, kafka, etc..
+      case GET -> Root / "dogs" ⇒ api.getAllDogs
+      case GET -> Root / "dogs" / offset ⇒ api.getDog(offset)
+      case req@POST -> Root / "dogs" ⇒ api.addDog(req)
+      case req@GET -> Root / "healthcheck" ⇒ Ok(ResponseMsg("OK")) // TODO: simple health check api.. should check things like connectivity: db, redis, kafka, etc..
     }
-  def postScala(req: Request): Task[Response] = {
-    req.decode[Dog] { d ⇒ Ok(d) }
+
+}
+object ServiceRoutes{
+  def apply(api: ServiceAPI): ServiceRoutes = new ServiceRoutes(api)
+}
+
+class ServiceAPI(store: SimpleStore[Dog]){
+  def getAllDogs: Task[Response] = Ok(store.getAll)
+    def addDog(req: Request): Task[Response] = {
+    req.decode[Dog] { d ⇒ {
+        store.put(d)
+        Created(d)
+      }
+    }
   }
 
   def getDog(offsetStr: String): Task[Response] = {
     Try(offsetStr.toInt) match {
-      case Success(i) ⇒
-        dogs.lift(i) match {
+      case Success(id) ⇒
+        store.get(id) match {
           case Some(d) ⇒ Ok(d)
-          case None    ⇒ NotFound(ResponseMsg("No dog at index: "+1))
+          case None    ⇒ NotFound(ResponseMsg("No dog at index: "+id))
         }
       case Failure(_) ⇒ BadRequest(ResponseMsg(offsetStr + " not a valid integer"))
     }
   }
+}
+object ServiceAPI{
+  def apply(store: SimpleStore[Dog]): ServiceAPI = new ServiceAPI(store)
 }

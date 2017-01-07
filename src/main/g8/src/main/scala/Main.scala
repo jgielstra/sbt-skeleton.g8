@@ -5,7 +5,18 @@ import org.http4s.server.blaze.BlazeBuilder
 
 object Main extends ServerApp {
 
-  def server(args: List[String]) = BlazeBuilder.bindHttp(8080)
-    .mountService(WebApp.service, "/")
-    .start
+  def server(args: List[String]) = {
+
+    val store = new SimpleStore[Dog]
+    store.putAll( List(
+      Dog("Cerberus", 5, "Mastiff"),
+      Dog("Fluffy", 5, "Poodle")
+    ))
+    val api = ServiceAPI(store)
+    val routes = ServiceRoutes(api)
+
+    BlazeBuilder.bindHttp(8080)
+      .mountService(routes.service, "/")
+      .start
+  }
 }
