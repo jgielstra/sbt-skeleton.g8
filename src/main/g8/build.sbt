@@ -14,7 +14,7 @@ resolvers ++= Seq(
     "Sonatype OSS Snapshots" at "http://oss.sonatype.org/content/repositories/snapshots/"
 )
 
-mainClass in Compile := Some("$organization$.$name;format=\"lower,word\"$.Main")
+mainClass in Compile := Some("$organization$.$name;format="lower,word"$.Main")
 
 enablePlugins(JavaAppPackaging)
 
@@ -47,4 +47,4 @@ scalacOptions ++= Seq(
     "-Ywarn-dead-code",
     "-Xfuture")
 
-initialCommands := "import $organization$.$name;format=\"lower,word\"$._"
+initialCommands := "import $organization$.$name;format="lower,word"$._"
